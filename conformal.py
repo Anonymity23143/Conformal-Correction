@@ -15,6 +15,7 @@ def calculate_entropy(probabilities):
         entropy_list.append(entropy)
     return np.array(entropy_list)
 
+
 def tps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
     cal_scores = 1 - cal_smx[np.arange(n), cal_labels]
     q_level = np.ceil((n+1) * (1-alpha)) / n
@@ -43,6 +44,7 @@ def tps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
     
     return coverage_per_class, prediction_sets, cov, eff, new_labels
 
+
 def aps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
     cal_pi = cal_smx.argsort(1)[:, ::-1]
     cal_srt = np.take_along_axis(cal_smx, cal_pi, axis=1).cumsum(axis=1)
@@ -69,7 +71,6 @@ def aps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
     neg_eff = np.sum((1 - cal_c_matrix) * cal_prediction_sets) / np.sum(1 - cal_c)
     
     return prediction_sets, cov, eff, pos, neg, pos_eff, neg_eff, qhat
-
 
 
 def raps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
