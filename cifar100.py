@@ -19,7 +19,6 @@ import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
-# new add
 from dataset import DatasetMaker
 from conformal import tps, aps, new_aps, raps
 import torch.nn.functional as F
