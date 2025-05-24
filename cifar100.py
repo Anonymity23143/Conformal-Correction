@@ -91,14 +91,12 @@ parser.add_argument('-e', '--evaluate', type=bool, default=False,
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 
-# new add
 parser.add_argument('--correction', default='cor', type=str)
 
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
 
-# new add
 cnt = 5
 
 alpha = 0.1
@@ -107,10 +105,7 @@ tau = 0.001
 target_size = 1.0
 
 CP_score = 'aps'
-if args.correction == 'conf':
-    loss_score = 'optimal_loss'
-else:
-    loss_score = 'apsloss' # 'tpsloss' 'focal_tpsloss_2.0' 'focal_tpsloss_adaptive' 'uncertain_loss' 'optimal_loss'
+loss_score = 'apsloss' 
 
 # Validate dataset
 assert args.dataset == 'cifar10' or args.dataset == 'cifar100', 'Dataset can only be cifar10 or cifar100.'
@@ -363,10 +358,10 @@ def main():
         if args.resume:
             # Load checkpoint.
             print('==> Loading basemodel..')
-            assert os.path.isfile(args.resume + f'-{0}/model_best.pth.tar'), 'Error: no checkpoint directory found!'
+            assert os.path.isfile(args.resume + f'-{run}/model_best.pth.tar'), 'Error: no checkpoint directory found!'
             # args.checkpoint = os.path.dirname(args.resume + f'-{run}/model_best.pth.tar')
             args.checkpoint = args.resume
-            checkpoint = torch.load(args.resume + f'-{0}/model_best.pth.tar')
+            checkpoint = torch.load(args.resume + f'-{run}/model_best.pth.tar')
             best_acc = checkpoint['best_acc']
             # start_epoch = checkpoint['epoch']
             base_model.load_state_dict(checkpoint['state_dict'])
@@ -433,32 +428,8 @@ def main():
             logger_cor = Logger(os.path.join(args.checkpoint + f'-{args.correction}-{run}', 'log.txt'), title=title)
             logger_cor.set_names(['Learning Rate', 'Train Loss', 'Size Loss.', 'Overall Loss', 'Valid Loss', 'Train Acc.', 'Valid Acc.', 'Valid Cov.', 'Valid Eff.', 'Positive', 'Negative', 'Positive Eff.', 'Negative Eff.', 'Qhat'])
             # cor-train and val
-            if args.correction == 'focal0':
-                criterion = FocalLoss(gamma = 0.0)
-            elif args.correction == 'focal01':
-                criterion = FocalLoss(gamma = 0.1)
-            elif args.correction == 'focal05':
-                criterion = FocalLoss(gamma = 0.5)
-            elif args.correction == 'focal1':
-                criterion = FocalLoss(gamma = 1.0)
-            elif args.correction == 'focal2':
-                criterion = FocalLoss(gamma = 2.0)
-            elif args.correction == 'focal4':
+            if args.correction == 'focal4':
                 criterion = FocalLoss(gamma = 4.0)
-            elif args.correction == 'focal5':
-                criterion = FocalLoss(gamma = 5.0)
-            elif args.correction == 'focal6':
-                criterion = FocalLoss(gamma = 6.0)
-            elif args.correction == 'focal8':
-                criterion = FocalLoss(gamma = 8.0)
-            elif args.correction == 'focal10':
-                criterion = FocalLoss(gamma = 10.0)
-            elif args.correction == 'focal12':
-                criterion = FocalLoss(gamma = 12.0)   
-            elif args.correction == 'focal15':
-                criterion = FocalLoss(gamma = 15.0)
-            elif args.correction == 'focal20':
-                criterion = FocalLoss(gamma = 20.0)
             else:
                 print("Correction error!")
                 exit(-1)
@@ -499,8 +470,8 @@ def main():
 
                 # save base_model
                 is_best = False
-                if 0.9*pos + 0.1*neg < 3.0:
-                    is_best = valid_eff < best_eff
+                if valid_eff < best_eff:
+                    is_best = True
                     best_eff = min(valid_eff, best_eff)
                 
                 save_checkpoint({
@@ -573,60 +544,6 @@ def main():
     print('overall entropy:', np.mean(final_dict['entropy']), np.std(final_dict['entropy']), final_dict['entropy'])
 
     
-
-def ConfTrLoss(confgnn_smx_calib, confgnn_smx_test, labels, labels_test):
-    # tps_conformal_score = confgnn_smx_calib[torch.arange(len(labels)), labels]
-    # q_level = np.ceil((len(labels) + 1) * (1 - alpha))/ len(labels)
-    # qhat = torch.quantile(tps_conformal_score, 1 - q_level, interpolation='higher')
-    # c = torch.sigmoid((confgnn_smx_test - qhat)/tau)
-
-    cal_pi = confgnn_smx_calib.argsort(dim=1, descending=True)
-    cal_srt = torch.gather(confgnn_smx_calib, dim=1, index=cal_pi)
-    cal_srt = cal_srt.cumsum(dim=1)
-    cal_scores = torch.gather(cal_srt, dim=1, index=cal_pi.argsort(dim=1))
-    cal_scores = cal_scores[torch.arange(len(labels)), labels]
-    q_level = torch.ceil(torch.tensor((len(labels) + 1) * (1 - alpha), dtype=torch.float32))/ len(labels)
-    qhat = torch.quantile(cal_scores, q_level.item(), interpolation='higher')
-    val_pi = confgnn_smx_test.argsort(dim=1, descending=True)
-    val_srt = torch.gather(confgnn_smx_test, dim=1, index=val_pi)
-    val_srt = val_srt.cumsum(dim=1)
-    val_scores = torch.gather(val_srt, dim=1, index=val_pi.argsort(dim=1))
-    c = torch.sigmoid((qhat - val_scores) / tau)
-    
-    def smooth_predict_fn(probabilities, qhat, temperature):
-        # Compute probabilities using softmax
-        # probabilities = F.softmax(logits, dim=1)
-        # Apply smooth thresholding using sigmoid
-        confidence_sets = torch.sigmoid((probabilities - qhat) / temperature)
-        return confidence_sets
-
-    def get_loss_matrix(num_classes):
-        loss_matrix = torch.eye(num_classes, dtype=torch.float32).cuda()
-        # Validate the shape of the loss matrix
-        if loss_matrix.size(0) != num_classes or loss_matrix.size(1) != num_classes:
-            raise ValueError('Loss matrix has to be num_classes x num_classes')
-        return loss_matrix
-    
-    def compute_general_classification_loss(confidence_sets, labels, loss_matrix):
-        # Create one-hot encoding of labels
-        one_hot_labels = F.one_hot(labels, num_classes=confidence_sets.size(1)).float().cuda()
-
-        # Compute L1 and L2 terms
-        l1 = (1 - confidence_sets) * one_hot_labels * loss_matrix[labels]
-        l2 = confidence_sets * (1 - one_hot_labels) * loss_matrix[labels]
-
-        # Compute loss by summing maximum of (L1 + L2) across classes and averaging
-        loss = torch.sum(torch.clamp(l1 + l2, min=0), dim=1)
-        return torch.mean(loss)
-
-    prediction_sets = smooth_predict_fn(confgnn_smx_test, qhat, temperature=tau)
-    coverage_loss = compute_general_classification_loss(prediction_sets, labels_test.detach().cpu(), get_loss_matrix(confgnn_smx_calib.shape[1]))
-    size_loss = torch.mean(torch.relu(torch.sum(c, axis = 1) - target_size))
-    # optimal_loss = torch.log(coverage_loss + size_loss + 1e-8)
-    # print(coverage_loss)
-    return coverage_loss + size_loss_weight * size_loss
-    
-
 def cor_train(trainloader, confmodel, criterion, logits_calib_cor_loader, logits_test_cor_loader, optimizer, epoch, use_cuda):
     # switch to train mode
     confmodel.train()
@@ -710,10 +627,6 @@ def cor_train(trainloader, confmodel, criterion, logits_calib_cor_loader, logits
             # size_loss = torch.mean(torch.relu(torch.sum(c, axis = 1) - target_size))
             new_loss = size_loss_weight * torch.mean(torch.relu(torch.sum(c, axis = 1) - target_size))
             # new_loss = 0.0
-
-        elif loss_score.find('optimal_loss') != -1:
-            new_loss = ConfTrLoss(confgnn_smx_calib, confgnn_smx_test, labels, labels_test)
-
         else:
             print("loss score error!")
             exit(0)
@@ -874,7 +787,6 @@ def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoin
     torch.save(state, filepath)
     if is_best:
         shutil.copyfile(filepath, os.path.join(checkpoint, 'model_best.pth.tar'))
-
 
 def adjust_learning_rate(optimizer, epoch):
     global state

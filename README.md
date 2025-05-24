@@ -36,38 +36,22 @@ Conformal correction on CIFAR-10/100 with PyTorch.
 * Correction commands
   ```
   # cifar10-resnet
-  python cifar10.py -a resnet --depth 56 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/resnet-56 --correction conf
-
   python cifar10.py -a resnet --depth 56 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/resnet-56 --correction focal4
 
-
   # cifar10-preresnet
-  python cifar10.py -a preresnet --depth 110 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/preresnet-110 --correction conf
-
   python cifar10.py -a preresnet --depth 110 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/preresnet-110 --correction focal4
 
-
   # cifar10-densenet
-  python cifar10.py -a densenet --depth 100 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/densenet-bc-100-12 --correction conf
-
   python cifar10.py -a densenet --depth 100 --epochs 200 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar10/densenet-bc-100-12 --correction focal4
 
 
   # cifar100-resnet
-  python cifar100.py -a resnet --dataset cifar100 --depth 56 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/resnet-56 --correction conf
-
   python cifar100.py -a resnet --dataset cifar100 --depth 56 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/resnet-56 --correction focal4
 
-
   # cifar100-preresnet
-  python cifar100.py -a preresnet --dataset cifar100 --depth 110 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/preresnet-110 --correction conf
-
   python cifar100.py -a preresnet --dataset cifar100 --depth 110 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/preresnet-110 --correction focal4
 
-
   # cifar100-densenet
-  python cifar100.py -a densenet --dataset cifar100 --depth 100 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/densenet-bc-100-12 --correction conf
-
   python cifar100.py -a densenet --dataset cifar100 --depth 100 --epochs 500 --schedule 80 120 --gamma 0.1 --wd 1e-4 -e True --resume checkpoints/cifar100/densenet-bc-100-12 --correction focal4
   ```
 

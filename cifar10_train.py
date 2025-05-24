@@ -19,7 +19,6 @@ import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
-# new add
 from dataset import DatasetMaker
 from conformal import tps, aps, new_aps, raps
 import torch.nn.functional as F
@@ -91,14 +90,12 @@ parser.add_argument('-e', '--evaluate', type=bool, default=False,
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 
-# new add
 parser.add_argument('--correction', default='cor', type=str)
 
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
 
-# new add
 cnt = 5
 
 alpha = 0.1
@@ -107,10 +104,7 @@ tau = 0.001
 target_size = 1.0
 
 CP_score = 'aps'
-if args.correction == 'conf':
-    loss_score = 'optimal_loss'
-else:
-    loss_score = 'apsloss' # 'tpsloss' 'focal_tpsloss_2.0' 'focal_tpsloss_adaptive' 'uncertain_loss' 'optimal_loss'
+loss_score = 'apsloss'
 
 # Validate dataset
 assert args.dataset == 'cifar10' or args.dataset == 'cifar100', 'Dataset can only be cifar10 or cifar100.'
@@ -363,10 +357,10 @@ def main():
         if args.resume:
             # Load checkpoint.
             print('==> Loading basemodel..')
-            assert os.path.isfile(args.resume + f'-{0}/model_best.pth.tar'), 'Error: no checkpoint directory found!'
+            assert os.path.isfile(args.resume + f'-{run}/model_best.pth.tar'), 'Error: no checkpoint directory found!'
             # args.checkpoint = os.path.dirname(args.resume + f'-{run}/model_best.pth.tar')
             args.checkpoint = args.resume
-            checkpoint = torch.load(args.resume + f'-{0}/model_best.pth.tar')
+            checkpoint = torch.load(args.resume + f'-{run}/model_best.pth.tar')
             best_acc = checkpoint['best_acc']
             # start_epoch = checkpoint['epoch']
             base_model.load_state_dict(checkpoint['state_dict'])
