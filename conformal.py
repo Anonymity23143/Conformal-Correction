@@ -89,6 +89,7 @@ def raps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
     return prediction_sets, cov, eff, pos, neg, 0.0, 0.0, qhat
 
 
+
 # def tps(cal_smx, val_smx, cal_labels, val_labels, n, alpha):
 #     cal_scores = 1 - cal_smx[np.arange(n), cal_labels]
 #     q_level = np.ceil((n+1) * (1-alpha)) / n
