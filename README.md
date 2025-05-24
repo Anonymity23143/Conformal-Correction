@@ -1,10 +1,12 @@
 # Conformal-Correction
 Conformal correction on CIFAR-10/100 with PyTorch.
 
+
 ## Features
 * Support for multiple GPUs  
 * Training progress bar with comprehensive details  
 * Unified interface for different network architectures
+
 
 ## Install
 * Install [PyTorch](http://pytorch.org/)
@@ -12,6 +14,7 @@ Conformal correction on CIFAR-10/100 with PyTorch.
   ```
   git clone --recursive https://github.com/Anonymity23143/Conformal-Correction.git
   ```
+
 
 ## Pre-Training
 * Training commands
@@ -31,6 +34,7 @@ Conformal correction on CIFAR-10/100 with PyTorch.
 
   python cifar100_train.py -a densenet --dataset cifar100 --depth 100 --growthRate 12 --train-batch 64 --epochs 300 --schedule 150 225 --wd 1e-4 --gamma 0.1 --checkpoint checkpoints/cifar100/densenet-bc-100-12
   ```
+
 
 ## Conformal correction
 * Correction commands

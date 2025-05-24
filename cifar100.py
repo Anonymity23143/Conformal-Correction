@@ -20,7 +20,7 @@ import models.cifar as models
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
 from dataset import DatasetMaker
-from conformal import tps, aps, new_aps, raps
+from conformal import tps, aps, raps
 import torch.nn.functional as F
 from focal_loss import FocalLoss, FocalLossAdaptive, EntropyLoss
 from wsc import wsc_unbiased
@@ -189,8 +189,6 @@ def compute_conform(index, dataset_logits, temp, is_platt, cmodel, T):
         cov, eff = tps(base_model_smx_calib, base_model_smx_test, labels_calib, labels_test, len(logits_calib), alpha)
     elif CP_score == 'aps':
         _, cov, eff, pos, neg, pos_eff, neg_eff, qhat = aps(base_model_smx_calib, base_model_smx_test, labels_calib, labels_test, len(logits_calib), alpha)
-    elif CP_score == 'new_aps':
-        _, cov, eff, pos, neg, pos_eff, neg_eff, qhat = new_aps(base_model_smx_calib, base_model_smx_test, labels_calib, labels_test, len(logits_calib), alpha)
     elif CP_score == 'raps':
         cov, eff = raps(base_model_smx_calib, base_model_smx_test, labels_calib, labels_test, len(logits_calib), alpha)
     else:
